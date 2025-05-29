@@ -1,14 +1,12 @@
+from cell import GenericCell
+from parameters import IMMUNOSUPPRESSION
 import random
 
-from GenericCell import GenericCell
-from simulation import IMMUNOSUPPRESSION
-
-
-class TCellCD8(GenericCell):
+class TCell_CD8(GenericCell):
     def __init__(self):
         super().__init__("CD8+ Cytotoxic")
         self.kills = 0
-
+    
     def act(self, environment):
         if random.random() > IMMUNOSUPPRESSION:
             if environment['tumor_cells'] > 0:

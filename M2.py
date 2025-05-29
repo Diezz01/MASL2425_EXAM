@@ -1,8 +1,8 @@
-from GenericCell import GenericCell
+from cell import GenericCell
 
-class MacrophageM2(GenericCell):
+class Macrophage_M2(GenericCell):
     def __init__(self):
         super().__init__("Macrophage M2")
-
+    
     def act(self, environment):
         environment['tumor_cells'] += 0.5  # Favorisce crescita tumorale

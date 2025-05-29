@@ -1,13 +1,13 @@
-from GenericCell import GenericCell
+from cell import GenericCell
+from CD8 import TCell_CD8
 import random
-from TCellCD8 import TCellCD8
 
-class TCellTreg(GenericCell):
+class TCell_Treg(GenericCell):
     def __init__(self):
         super().__init__("Treg")
-
+    
     def act(self, environment):
         # Inibisce altri T cell
         for cell in environment['agents']:
-            if isinstance(cell, TCellCD8) and random.random() < 0.3:
+            if isinstance(cell, TCell_CD8) and random.random() < 0.3:
                 cell.active = False
