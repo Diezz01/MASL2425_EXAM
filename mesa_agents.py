@@ -1,0 +1,61 @@
+from mesa import Agent
+import random
+
+class ImmuneCell(Agent):
+    def __init__(self, unique_id, model, cell_type):
+        super().__init__(unique_id, model)
+        self.cell_type = cell_type
+        self.active = True
+
+    def step(self):
+        # Movimento casuale
+        self.random_move()
+
+        if self.cell_type == "CD8":
+            self.kill_tumor()
+        elif self.cell_type == "Treg":
+            self.suppress_cd8()
+        elif self.cell_type == "M1":
+            self.kill_tumor(slow=True)
+        elif self.cell_type == "M2":
+            self.promote_tumor()
+        elif self.cell_type == "NK":
+            self.kill_tumor()
+    
+    def random_move(self):
+        possible_steps = self.model.grid.get_neighborhood(self.pos, moore=True, include_center=False)
+        new_position = self.random.choice(possible_steps)
+        self.model.grid.move_agent(self, new_position)
+    
+    def kill_tumor(self, slow=False):
+        eff = self.model.patient_params.immune_response_level
+        if not self.active or random.random() > eff:
+            return
+
+        cellmates = self.model.grid.get_cell_list_contents([self.pos])
+        for obj in cellmates:
+            if isinstance(obj, TumorCell):
+                self.model.grid.remove_agent(obj)
+                self.model.schedule.remove(obj)
+                if slow:
+                    break
+
+    def suppress_cd8(self):
+        cellmates = self.model.grid.get_cell_list_contents([self.pos])
+        for obj in cellmates:
+            if isinstance(obj, ImmuneCell) and obj.cell_type == "CD8":
+                obj.active = False
+
+    def promote_tumor(self):
+        if random.random() < 0.1:
+            self.model.spawn_tumor(pos=self.pos)
+
+
+class TumorCell(Agent):
+    def __init__(self, unique_id, model):
+        super().__init__(unique_id, model)
+    
+    def step(self):
+        rate = self.model.patient_params.tumor_proliferation_rate
+        if random.random() < rate:
+            self.model.spawn_tumor(pos=self.pos)
