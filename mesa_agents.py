@@ -47,7 +47,9 @@ class ImmuneCell(Agent):
                 obj.active = False
 
     def promote_tumor(self):
-        if random.random() < 0.1:
+        randomvar = self.random.random()
+        print("Promotion check:", randomvar)
+        if randomvar < 0.1:
             self.model.spawn_tumor(pos=self.pos)
 
 
@@ -57,5 +59,7 @@ class TumorCell(Agent):
     
     def step(self):
         rate = self.model.patient_params.tumor_proliferation_rate
-        if random.random() < rate:
+        randomvar = self.random.random()
+        print("Proliferation check:", randomvar)
+        if randomvar < rate:
             self.model.spawn_tumor(pos=self.pos)

@@ -4,6 +4,16 @@ from mesa.visualization.modules import ChartModule
 from mesa_model import TumorModel
 from mesa_agents import ImmuneCell, TumorCell
 from mesa_parameters import PatientParameters
+from mesa.visualization.modules import TextElement
+from mesa.visualization.UserParam import UserSettableParameter
+
+
+class PatientStatusElement(TextElement):
+    def render(self, model):
+        if not model.patient_alive:
+            return "⚠️ Stato: Paziente deceduto"
+        else:
+            return f"✅ Stato: Vivo — Cellule tumorali: {model.get_tumor_count()}"
 
 def agent_portrayal(agent):
     portrayal = {}
@@ -40,24 +50,36 @@ grid = CanvasGrid(agent_portrayal, 20, 20, 500, 500)
 chart = ChartModule([
     {"Label": "Tumor Cells", "Color": "Red"},
 ])
-
+#HIGH BMI means low tumor proliferation rate
+#famale subject has higher tumor proliferation rate and immune response level than male
 params = PatientParameters(
-    sex="female",
+    sex="male",
     bmi=32.5,
-    immune_response_level=1.4,
+    immune_response_level=0.5,
     tumor_proliferation_rate=0.08,
+    resistance_to_therapy=0.04
+)
+
+params2 = PatientParameters(
+    sex="female",
+    bmi=25,
+    immune_response_level=0.5,
+    tumor_proliferation_rate=0.8,
     resistance_to_therapy=0.04
 )
 
 server = ModularServer(
     TumorModel,
-    [grid, chart],
+    [grid, chart, PatientStatusElement()],
     "Tumor Simulation",
     {
         "width": 20,
         "height": 20,
         "initial_tumors": 10,
         "immune_cells": 30,
-        "patient_params": params
+        "patient_params": params,
+        "activate_therapy": UserSettableParameter("slider","Somministra terapia",  False, False, True, 1),
     }
 )
+
+
