@@ -8,7 +8,7 @@ import random
 
 
 class TumorModel(Model):
-    def __init__(self, patient_params: PatientParameters, width=20, height=20, initial_tumors=10, immune_cells=30, activate_therapy=False):
+    def __init__(self, patient_params: PatientParameters, width=20, height=20, initial_tumors=10,  activate_therapy=False):
         self.grid = MultiGrid(width, height, True)
         self.schedule = RandomActivation(self)
         self.current_id = 0
@@ -24,19 +24,39 @@ class TumorModel(Model):
             self.spawn_tumor((x, y))
 
         # Crea cellule immunitarie
-        for _ in range(immune_cells):
-            x = self.random.randrange(width)
-            y = self.random.randrange(height)
-            cell_type = self.random.choice(["CD8", "Treg", "M1", "M2", "NK"])
-            agent = ImmuneCell(self.next_id(), self, cell_type)
-            self.grid.place_agent(agent, (x, y))
-            self.schedule.add(agent)
+        immune_types = ["CD8", "Treg", "M1", "M2", "NK"]
+        cells_per_type = 10  # 10 per tipo
+        total_cells = cells_per_type * len(immune_types)  # 50
+
+        # 1. Crea tutte le possibili coordinate
+        all_positions = [(x, y) for x in range(width) for y in range(height)]
+
+        # 2. Mescola le posizioni
+        self.random.shuffle(all_positions)
+
+        # 3. Prendi le prime 50 posizioni uniche
+        unique_positions = all_positions[:total_cells]
+
+        # 4. Assegna agenti a posizioni uniche
+        pos_index = 0
+        for cell_type in immune_types:
+            print("inserico cell: ",cell_type)
+            for _ in range(cells_per_type):
+                print("inserico cell position: ",cell_type)
+                pos = unique_positions[pos_index]
+                pos_index += 1
+                agent = ImmuneCell(self.next_id(), self, cell_type)
+                self.grid.place_agent(agent, pos)
+                self.schedule.add(agent)
 
         self.datacollector = DataCollector(
             model_reporters={
                 "Tumor Cells": lambda m: sum(isinstance(a, TumorCell) for a in m.schedule.agents),
                 "CD8": lambda m: sum(isinstance(a, ImmuneCell) and a.cell_type == "CD8" for a in m.schedule.agents),
                 "Treg": lambda m: sum(isinstance(a, ImmuneCell) and a.cell_type == "Treg" for a in m.schedule.agents),
+                "NK": lambda m: sum(isinstance(a, ImmuneCell) and a.cell_type == "NK" for a in m.schedule.agents),
+                "M1": lambda m: sum(isinstance(a, ImmuneCell) and a.cell_type == "M1" for a in m.schedule.agents),
+                "M2": lambda m: sum(isinstance(a, ImmuneCell) and a.cell_type == "M2" for a in m.schedule.agents),
             }
         )
         self.datacollector.collect(self)
@@ -48,6 +68,7 @@ class TumorModel(Model):
 
     def get_tumor_count(self):
         return sum(isinstance(agent, TumorCell) for agent in self.schedule.agents)
+    
 
 
     def apply_therapy_effects(self):

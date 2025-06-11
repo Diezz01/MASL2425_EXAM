@@ -47,9 +47,20 @@ def agent_portrayal(agent):
 
 grid = CanvasGrid(agent_portrayal, 20, 20, 500, 500)
 
+'''chart = ChartModule([
+    {"Label": "Tumor Cells", "Color": "Red"},
+])'''
+
 chart = ChartModule([
     {"Label": "Tumor Cells", "Color": "Red"},
+    {"Label": "CD8", "Color": "Blue"},
+    {"Label": "Treg", "Color": "Orange"},
+    {"Label": "M1", "Color": "Green"},
+    {"Label": "M2", "Color": "Purple"},
+    {"Label": "NK", "Color": "Black"},
 ])
+
+
 #HIGH BMI means low tumor proliferation rate
 #famale subject has higher tumor proliferation rate and immune response level than male
 params = PatientParameters(
@@ -76,7 +87,6 @@ server = ModularServer(
         "width": 20,
         "height": 20,
         "initial_tumors": 10,
-        "immune_cells": 30,
         "patient_params": params,
         "activate_therapy": UserSettableParameter("slider","Somministra terapia",  False, False, True, 1),
     }
