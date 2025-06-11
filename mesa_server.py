@@ -13,7 +13,7 @@ class PatientStatusElement(TextElement):
         if not model.patient_alive:
             return "⚠️ Stato: Paziente deceduto"
         else:
-            return f"✅ Stato: Vivo — Cellule tumorali: {model.get_tumor_count()}"
+            return f"✅ Stato: Vivo — Cellule tumorali: {model.get_cells_count()["Tumor Cells"](model)}"
 
 def agent_portrayal(agent):
     portrayal = {}
@@ -71,13 +71,13 @@ params = PatientParameters(
     resistance_to_therapy=0.04
 )
 
-params2 = PatientParameters(
+'''params2 = PatientParameters(
     sex="female",
     bmi=25,
     immune_response_level=0.5,
     tumor_proliferation_rate=0.8,
     resistance_to_therapy=0.04
-)
+)'''
 
 server = ModularServer(
     TumorModel,

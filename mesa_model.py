@@ -13,7 +13,7 @@ class TumorModel(Model):
         self.schedule = RandomActivation(self)
         self.current_id = 0
         self.patient_params = patient_params
-        self.max_tumor_cells = 300
+        self.max_number_of_cells = 400
         self.patient_alive = True
         self.therapy_administrstered = 0
         self.activate_therapy = activate_therapy
@@ -40,24 +40,18 @@ class TumorModel(Model):
         # 4. Assegna agenti a posizioni uniche
         pos_index = 0
         for cell_type in immune_types:
-            print("inserico cell: ",cell_type)
+            #print("inserico cell: ",cell_type)
             for _ in range(cells_per_type):
-                print("inserico cell position: ",cell_type)
+                #print("inserico cell position: ",cell_type)
                 pos = unique_positions[pos_index]
                 pos_index += 1
                 agent = ImmuneCell(self.next_id(), self, cell_type)
                 self.grid.place_agent(agent, pos)
                 self.schedule.add(agent)
 
+        #this part is to permit the visualization in the chart at each step
         self.datacollector = DataCollector(
-            model_reporters={
-                "Tumor Cells": lambda m: sum(isinstance(a, TumorCell) for a in m.schedule.agents),
-                "CD8": lambda m: sum(isinstance(a, ImmuneCell) and a.cell_type == "CD8" for a in m.schedule.agents),
-                "Treg": lambda m: sum(isinstance(a, ImmuneCell) and a.cell_type == "Treg" for a in m.schedule.agents),
-                "NK": lambda m: sum(isinstance(a, ImmuneCell) and a.cell_type == "NK" for a in m.schedule.agents),
-                "M1": lambda m: sum(isinstance(a, ImmuneCell) and a.cell_type == "M1" for a in m.schedule.agents),
-                "M2": lambda m: sum(isinstance(a, ImmuneCell) and a.cell_type == "M2" for a in m.schedule.agents),
-            }
+            self.get_cells_count()
         )
         self.datacollector.collect(self)
 
@@ -66,9 +60,20 @@ class TumorModel(Model):
         self.grid.place_agent(tumor, pos)
         self.schedule.add(tumor)
 
-    def get_tumor_count(self):
-        return sum(isinstance(agent, TumorCell) for agent in self.schedule.agents)
+    def get_cells_count(self):
+        return {
+                "Tumor Cells": lambda m: sum(isinstance(a, TumorCell) for a in m.schedule.agents),
+                "CD8": lambda m: sum(isinstance(a, ImmuneCell) and a.cell_type == "CD8" for a in m.schedule.agents),
+                "Treg": lambda m: sum(isinstance(a, ImmuneCell) and a.cell_type == "Treg" for a in m.schedule.agents),
+                "NK": lambda m: sum(isinstance(a, ImmuneCell) and a.cell_type == "NK" for a in m.schedule.agents),
+                "M1": lambda m: sum(isinstance(a, ImmuneCell) and a.cell_type == "M1" for a in m.schedule.agents),
+                "M2": lambda m: sum(isinstance(a, ImmuneCell) and a.cell_type == "M2" for a in m.schedule.agents)
+            }
     
+    def spawn_immune(self, cell_type, pos):
+        new_agent = ImmuneCell(self.next_id(), self, cell_type)
+        self.grid.place_agent(new_agent, pos)
+        self.schedule.add(new_agent)   
 
 
     def apply_therapy_effects(self):
@@ -83,18 +88,34 @@ class TumorModel(Model):
         print(f"💊 Terapia somministrata: {killed} cellule tumorali rimosse.")
         self.therapy_administered = False  # Resetta il flag'''
 
+    def check_number_of_cells(self):
+
+        counts = self.get_cells_count()
+        for cell_type, counter in counts.items():
+            num = counter(self)
+            print(f"{cell_type}: {num}")
+
+            if num > self.max_number_of_cells:
+                print("prova1")
+                if cell_type == "Tumor Cells":
+                    print("prova2")
+                    return False, "Paziente deceduto: crescita tumorale incontrollata."
+                return False, "Simulazione terminata: paziente guarito"
+            
+        return True, ""
+
     def step(self):
-        if not self.patient_alive:
+        if not self.patient_alive or self.schedule.time > 80 :
             self.running = False
             return  # Non continuare la simulazione
 
         self.schedule.step()
         self.datacollector.collect(self)
 
-        # Controlla il numero di cellule tumorali
-        tumor_count = self.get_tumor_count()
-        if tumor_count > self.max_tumor_cells:
-            print("Paziente deceduto: crescita tumorale incontrollata.")
+        # Controlla il numero di cellule         
+        check_cells, message = self.check_number_of_cells()
+        if check_cells == False:
+            print(message)
             self.patient_alive = False
 
         if self.therapy_administrstered == 1:

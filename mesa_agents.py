@@ -1,6 +1,22 @@
 from mesa import Agent
 import random
 
+'''proliferation_rates = {
+    "CD8": 0.02,
+    "Treg": 0.05,
+    "M1": 0.03,
+    "M2": 0.04,
+    "NK": 0.01
+}'''
+
+proliferation_rates = {
+    "CD8": 0.08,
+    "Treg": 0.05,
+    "M1": 0.03,
+    "M2": 0.04,
+    "NK": 0.01
+}
+
 class ImmuneCell(Agent):
     def __init__(self, unique_id, model, cell_type):
         super().__init__(unique_id, model)
@@ -21,6 +37,12 @@ class ImmuneCell(Agent):
             self.promote_tumor()
         elif self.cell_type == "NK":
             self.kill_tumor()
+
+        # immune cells proliferation
+        rate = proliferation_rates[self.cell_type]
+        if self.random.random() < rate:
+            self.model.spawn_immune(cell_type=self.cell_type, pos=self.pos)
+
     
     def random_move(self):
         possible_steps = self.model.grid.get_neighborhood(self.pos, moore=True, include_center=False)
@@ -48,8 +70,9 @@ class ImmuneCell(Agent):
 
     def promote_tumor(self):
         randomvar = self.random.random()
+        threshold = self.model.patient_params.tumor_proliferation_rate
         print("Promotion check:", randomvar)
-        if randomvar < 0.1:
+        if randomvar < threshold:
             self.model.spawn_tumor(pos=self.pos)
 
 
