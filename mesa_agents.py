@@ -10,7 +10,7 @@ import random
 }'''
 
 proliferation_rates = {
-    "CD8": 0.08,
+    "CD8": 0.04,
     "Treg": 0.05,
     "M1": 0.03,
     "M2": 0.04,
@@ -51,7 +51,10 @@ class ImmuneCell(Agent):
     
     def kill_tumor(self, slow=False):
         eff = self.model.patient_params.immune_response_level
-        if not self.active or random.random() > eff:
+
+        #if cell is not active or the probability relater to the tumor resisance is higher than the immune_response_level,
+        #the cell does not kill the tumor
+        if not self.active or random.random() > eff: 
             return
 
         cellmates = self.model.grid.get_cell_list_contents([self.pos])
@@ -71,7 +74,7 @@ class ImmuneCell(Agent):
     def promote_tumor(self):
         randomvar = self.random.random()
         threshold = self.model.patient_params.tumor_proliferation_rate
-        print("Promotion check:", randomvar)
+        #print("Promotion check:", randomvar)
         if randomvar < threshold:
             self.model.spawn_tumor(pos=self.pos)
 
@@ -83,6 +86,6 @@ class TumorCell(Agent):
     def step(self):
         rate = self.model.patient_params.tumor_proliferation_rate
         randomvar = self.random.random()
-        print("Proliferation check:", randomvar)
+        #print("Proliferation check:", randomvar)
         if randomvar < rate:
             self.model.spawn_tumor(pos=self.pos)

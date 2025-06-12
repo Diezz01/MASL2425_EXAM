@@ -79,17 +79,29 @@ params = PatientParameters(
     resistance_to_therapy=0.04
 )'''
 
-server = ModularServer(
-    TumorModel,
-    [grid, chart, PatientStatusElement()],
-    "Tumor Simulation",
-    {
-        "width": 20,
-        "height": 20,
-        "initial_tumors": 10,
-        "patient_params": params,
-        "activate_therapy": UserSettableParameter("slider","Somministra terapia",  False, False, True, 1),
-    }
-)
+
+model_params = {
+    "activate_therapy": UserSettableParameter("slider", "Somministrala capitano", 0, 0, 1, 1),
+    "patient_sex": UserSettableParameter("checkbox", "Sex (True = Male, False = Female)", True),
+
+
+    "bmi": UserSettableParameter("number", "BMI", 22.5, 10.0, 40.0, 0.1),
+    "cd8": UserSettableParameter("number", "CD8", 0.04, 0.1, 1.0, 0.1), 
+    "treg": UserSettableParameter("number", "Treg", 0.05, 0.1, 1.0, 0.1), 
+    "nk": UserSettableParameter("number", "NK", 0.01, 0.1, 1.0, 0.1), 
+    "m1": UserSettableParameter("number", "M1", 0.03, 0.1, 1.0, 0.1), 
+    "m2": UserSettableParameter("number", "M2", 0.04, 0.1, 1.0, 0.1),
+
+    "immune_response_level": UserSettableParameter("number", "Livello risposta immunitaria", 0.7),
+    "tumor_proliferation_rate": UserSettableParameter("number", "Tasso proliferazione tumore", 0.1),
+    "resistance_to_therapy": UserSettableParameter("number", "Resistenza alla terapia", 0.2),
+
+    "width": 20, "height": 20,
+    "initial_tumors": 10,
+    "patient_params": params, 
+}
+
+grid = CanvasGrid(agent_portrayal, 20, 20, 500, 500)
+server = ModularServer(TumorModel, [grid, chart, PatientStatusElement()], "RCC Model", model_params)
 
 

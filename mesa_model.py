@@ -6,17 +6,28 @@ from mesa.datacollection import DataCollector
 from mesa_parameters import PatientParameters
 import random
 
-
 class TumorModel(Model):
-    def __init__(self, patient_params: PatientParameters, width=20, height=20, initial_tumors=10,  activate_therapy=False):
+    def __init__(self,activate_therapy, patient_sex, bmi, cd8, treg, nk, m1, m2, immune_response_level, tumor_proliferation_rate, resistance_to_therapy,patient_params: PatientParameters, width=20, height=20, initial_tumors=10):
         self.grid = MultiGrid(width, height, True)
         self.schedule = RandomActivation(self)
         self.current_id = 0
         self.patient_params = patient_params
         self.max_number_of_cells = 400
         self.patient_alive = True
-        self.therapy_administrstered = 0
-        self.activate_therapy = activate_therapy
+
+        self.patient_sex = patient_sex
+        self.bmi = bmi
+        self.CD8 = cd8
+        self.treg = treg
+        self.nk = nk
+        self.m1 = m1
+        self.m2 = m2
+        self.immune_response_level = immune_response_level
+        self.tumor_proliferation_rate = tumor_proliferation_rate
+        self.resistance_to_therapy = resistance_to_therapy
+
+        self.activate_therapy_param = activate_therapy
+        self.therapy_already_applied = False
 
         for _ in range(initial_tumors):
             x = self.random.randrange(width)
@@ -78,27 +89,35 @@ class TumorModel(Model):
 
     def apply_therapy_effects(self):
         print("💊 Terapia somministrata: inizio effetto.")
-        '''killed = 0
-        for agent in list(self.schedule.agents):  # copia lista per evitare problemi
-            if isinstance(agent, TumorCell):
-                if random.random() < 0.5:  # 50% efficacia
-                    self.grid.remove_agent(agent)
-                    self.schedule.remove(agent)
-                    killed += 1
-        print(f"💊 Terapia somministrata: {killed} cellule tumorali rimosse.")
-        self.therapy_administered = False  # Resetta il flag'''
+        #change the immune_response_level
+        '''print("irl before", self.patient_params["immune_response_level"])
+        print("tpr before", self.patient_params["tumor_proliferation_rate"])
+        self.patient_params["immune_response_level"] +=0.05
+        self.patient_params["tumor_proliferation_rate"] -= 0.01
+        print("irl after", self.patient_params["immune_response_level"])
+        print("tpr after", self.patient_params["tumor_proliferation_rate"])'''
+
+        print("irl before", self.patient_params.immune_response_level)
+        print("tpr before", self.patient_params.tumor_proliferation_rate)
+        self.patient_params.immune_response_level *= 1.5
+        self.patient_params.tumor_proliferation_rate -= 0.01
+        print("irl after", self.patient_params.immune_response_level)
+        print("tpr after", self.patient_params.tumor_proliferation_rate)
+
 
     def check_number_of_cells(self):
 
         counts = self.get_cells_count()
         for cell_type, counter in counts.items():
             num = counter(self)
-            print(f"{cell_type}: {num}")
+
+            if num >= 200 and cell_type == "Tumor Cells" and not self.therapy_already_applied : #and controlla anche la checkbox
+                self.therapy_already_applied = True
+                self.apply_therapy_effects()
 
             if num > self.max_number_of_cells:
-                print("prova1")
                 if cell_type == "Tumor Cells":
-                    print("prova2")
+
                     return False, "Paziente deceduto: crescita tumorale incontrollata."
                 return False, "Simulazione terminata: paziente guarito"
             
@@ -112,15 +131,21 @@ class TumorModel(Model):
         self.schedule.step()
         self.datacollector.collect(self)
 
-        # Controlla il numero di cellule         
+        # Check the number of each type of cell        
         check_cells, message = self.check_number_of_cells()
         if check_cells == False:
             print(message)
             self.patient_alive = False
 
-        if self.therapy_administrstered == 1:
-            self.apply_therapy_effects()
+        '''# Dynamically fetch updated slider value
+        try:
+            updated_therapy_value = self.activate_therapy_param.value
+        except AttributeError:
+            updated_therapy_value = self.activate_therapy_param
 
-        '''if self.activate_therapy:
-            self.therapy_administered = True
-            self.activate_therapy = False  # Resetta il bottone (è tipo trigger one-shot)'''
+        print("Activate therapy:", updated_therapy_value)
+        '''
+
+        if self.therapy_already_applied:
+            print("irl ", self.patient_params.immune_response_level)
+            print("tpr ", self.patient_params.tumor_proliferation_rate)
