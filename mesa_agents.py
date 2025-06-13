@@ -50,7 +50,7 @@ class ImmuneCell(Agent):
         self.model.grid.move_agent(self, new_position)
     
     def kill_tumor(self, slow=False):
-        eff = self.model.patient_params.immune_response_level
+        eff = self.model.immune_response_level
 
         #if cell is not active or the probability relater to the tumor resisance is higher than the immune_response_level,
         #the cell does not kill the tumor
@@ -73,7 +73,7 @@ class ImmuneCell(Agent):
 
     def promote_tumor(self):
         randomvar = self.random.random()
-        threshold = self.model.patient_params.tumor_proliferation_rate
+        threshold = self.model.tumor_proliferation_rate
         #print("Promotion check:", randomvar)
         if randomvar < threshold:
             self.model.spawn_tumor(pos=self.pos)
@@ -84,7 +84,7 @@ class TumorCell(Agent):
         super().__init__(unique_id, model)
     
     def step(self):
-        rate = self.model.patient_params.tumor_proliferation_rate
+        rate = self.model.tumor_proliferation_rate
         randomvar = self.random.random()
         #print("Proliferation check:", randomvar)
         if randomvar < rate:

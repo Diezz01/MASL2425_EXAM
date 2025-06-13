@@ -7,11 +7,11 @@ from mesa_parameters import PatientParameters
 import random
 
 class TumorModel(Model):
-    def __init__(self,activate_therapy, patient_sex, bmi, cd8, treg, nk, m1, m2, immune_response_level, tumor_proliferation_rate, resistance_to_therapy,patient_params: PatientParameters, width=20, height=20, initial_tumors=10):
+    def __init__(self,activate_therapy, patient_sex, bmi, cd8, treg, nk, m1, m2, immune_response_level, tumor_proliferation_rate, resistance_to_therapy, width=20, height=20, initial_tumors=10):
         self.grid = MultiGrid(width, height, True)
         self.schedule = RandomActivation(self)
         self.current_id = 0
-        self.patient_params = patient_params
+        #self.patient_params = patient_params
         self.max_number_of_cells = 400
         self.patient_alive = True
 
@@ -26,7 +26,7 @@ class TumorModel(Model):
         self.tumor_proliferation_rate = tumor_proliferation_rate
         self.resistance_to_therapy = resistance_to_therapy
 
-        self.activate_therapy_param = activate_therapy
+        self.activate_therapy = activate_therapy
         self.therapy_already_applied = False
 
         for _ in range(initial_tumors):
@@ -88,21 +88,14 @@ class TumorModel(Model):
 
 
     def apply_therapy_effects(self):
-        print("💊 Terapia somministrata: inizio effetto.")
-        #change the immune_response_level
-        '''print("irl before", self.patient_params["immune_response_level"])
-        print("tpr before", self.patient_params["tumor_proliferation_rate"])
-        self.patient_params["immune_response_level"] +=0.05
-        self.patient_params["tumor_proliferation_rate"] -= 0.01
-        print("irl after", self.patient_params["immune_response_level"])
-        print("tpr after", self.patient_params["tumor_proliferation_rate"])'''
+        print("Terapia somministrata: inizio effetto.")
 
-        print("irl before", self.patient_params.immune_response_level)
-        print("tpr before", self.patient_params.tumor_proliferation_rate)
-        self.patient_params.immune_response_level *= 1.5
-        self.patient_params.tumor_proliferation_rate -= 0.01
-        print("irl after", self.patient_params.immune_response_level)
-        print("tpr after", self.patient_params.tumor_proliferation_rate)
+        print("irl before", self.immune_response_level)
+        print("tpr before", self.tumor_proliferation_rate)
+        self.immune_response_level *= 1.5
+        self.tumor_proliferation_rate -= 0.01
+        print("irl after", self.immune_response_level)
+        print("tpr after", self.tumor_proliferation_rate)
 
 
     def check_number_of_cells(self):
@@ -111,7 +104,7 @@ class TumorModel(Model):
         for cell_type, counter in counts.items():
             num = counter(self)
 
-            if num >= 200 and cell_type == "Tumor Cells" and not self.therapy_already_applied : #and controlla anche la checkbox
+            if num >= 200 and cell_type == "Tumor Cells" and not self.therapy_already_applied and self.activate_therapy: #and controlla anche la checkbox
                 self.therapy_already_applied = True
                 self.apply_therapy_effects()
 
@@ -123,7 +116,21 @@ class TumorModel(Model):
             
         return True, ""
 
+    def printParameters(self):
+        print("bmi", self.bmi) 
+        print("cd8" ,self.CD8)
+        print("treg",self.treg)
+        print("nk",self.nk) 
+        print("m1" ,self.m1)
+        print("m2",self.m2)
+        print("immune_response_level",self.immune_response_level)
+        print("tumor_proliferation_rate",self.tumor_proliferation_rate)
+        print("resistance_to_therapy",self.resistance_to_therapy)
+
+
     def step(self):
+        #printParameters()
+
         if not self.patient_alive or self.schedule.time > 80 :
             self.running = False
             return  # Non continuare la simulazione
@@ -147,5 +154,5 @@ class TumorModel(Model):
         '''
 
         if self.therapy_already_applied:
-            print("irl ", self.patient_params.immune_response_level)
-            print("tpr ", self.patient_params.tumor_proliferation_rate)
+            print("irl ", self.immune_response_level)
+            print("tpr ", self.tumor_proliferation_rate)
