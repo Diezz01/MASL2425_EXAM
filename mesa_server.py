@@ -3,7 +3,6 @@ from mesa.visualization.ModularVisualization import ModularServer
 from mesa.visualization.modules import ChartModule
 from mesa_model import TumorModel
 from mesa_agents import ImmuneCell, TumorCell
-from mesa_parameters import PatientParameters
 from mesa.visualization.modules import TextElement
 from mesa.visualization.UserParam import UserSettableParameter
 
@@ -11,9 +10,9 @@ from mesa.visualization.UserParam import UserSettableParameter
 class PatientStatusElement(TextElement):
     def render(self, model):
         if not model.patient_alive:
-            return "⚠️ Stato: Paziente deceduto"
+            return model.message
         else:
-            return f"✅ Stato: Vivo — Cellule tumorali: {model.get_cells_count()["Tumor Cells"](model)}"
+            return model.message
 
 def agent_portrayal(agent):
     portrayal = {}
@@ -47,10 +46,6 @@ def agent_portrayal(agent):
 
 grid = CanvasGrid(agent_portrayal, 20, 20, 500, 500)
 
-'''chart = ChartModule([
-    {"Label": "Tumor Cells", "Color": "Red"},
-])'''
-
 chart = ChartModule([
     {"Label": "Tumor Cells", "Color": "Red"},
     {"Label": "CD8", "Color": "Blue"},
@@ -63,7 +58,8 @@ chart = ChartModule([
 
 #HIGH BMI means low tumor proliferation rate
 #famale subject has higher tumor proliferation rate and immune response level than male
-params = PatientParameters(
+'''
+params = (
     sex="male",
     bmi=32.5,
     immune_response_level=0.5,
@@ -71,7 +67,7 @@ params = PatientParameters(
     resistance_to_therapy=0.04
 )
 
-'''params2 = PatientParameters(
+params2 = (
     sex="female",
     bmi=25,
     immune_response_level=0.5,
@@ -85,19 +81,18 @@ model_params = {
     "patient_sex": UserSettableParameter("checkbox", "Sex (True = Male, False = Female)", True),
 
     "bmi": UserSettableParameter("number", "BMI", 22.5, 10.0, 40.0, 0.1),
-    "cd8": UserSettableParameter("number", "CD8", 0.04, 0.1, 1.0, 0.1), 
-    "treg": UserSettableParameter("number", "Treg", 0.05, 0.1, 1.0, 0.1), 
-    "nk": UserSettableParameter("number", "NK", 0.01, 0.1, 1.0, 0.1), 
-    "m1": UserSettableParameter("number", "M1", 0.03, 0.1, 1.0, 0.1), 
-    "m2": UserSettableParameter("number", "M2", 0.04, 0.1, 1.0, 0.1),
+    "cd8": UserSettableParameter("number", "CD8", 10, 1, 20, 1), 
+    "treg": UserSettableParameter("number", "Treg", 10, 1, 20, 1), 
+    "nk": UserSettableParameter("number", "NK", 10, 1, 20, 1), 
+    "m1": UserSettableParameter("number", "M1", 10, 1, 20, 1), 
+    "m2": UserSettableParameter("number", "M2", 10, 1, 20, 1),
+    "tumorCells": UserSettableParameter("number", "TumCells", 10, 1, 20, 1),
 
-    "immune_response_level": UserSettableParameter("number", "Immune response level", 0.7),
-    "tumor_proliferation_rate": UserSettableParameter("number", "Tumor proliferation rate", 0.1),
+    "immune_response_level": UserSettableParameter("number", "Immune response level", 0.5),
+    "tumor_proliferation_rate": UserSettableParameter("number", "Tumor proliferation rate", 0.08),
     "resistance_to_therapy": UserSettableParameter("number", "Resistance to therapy", 0.04),
 
-    "width": 20, "height": 20,
-    "initial_tumors": 10,
-    #"patient_params": params, 
+    "width": 20, "height": 20
 }
 
 grid = CanvasGrid(agent_portrayal, 20, 20, 500, 500)

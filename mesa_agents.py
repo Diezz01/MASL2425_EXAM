@@ -1,14 +1,7 @@
 from mesa import Agent
 import random
 
-'''proliferation_rates = {
-    "CD8": 0.02,
-    "Treg": 0.05,
-    "M1": 0.03,
-    "M2": 0.04,
-    "NK": 0.01
-}'''
-
+#rate that determine the probability of duplication of cells
 proliferation_rates = {
     "CD8": 0.04,
     "Treg": 0.05,
@@ -24,7 +17,7 @@ class ImmuneCell(Agent):
         self.active = True
 
     def step(self):
-        # Movimento casuale
+        # casual movement
         self.random_move()
 
         if self.cell_type == "CD8":
@@ -57,7 +50,9 @@ class ImmuneCell(Agent):
         if not self.active or random.random() > eff: 
             return
 
-        cellmates = self.model.grid.get_cell_list_contents([self.pos])
+        #cellmates = self.model.grid.get_cell_list_contents([self.pos])
+        cellmates = self.model.grid.get_neighbors(self.pos, moore=True, include_center=False)
+        
         for obj in cellmates:
             if isinstance(obj, TumorCell):
                 self.model.grid.remove_agent(obj)
