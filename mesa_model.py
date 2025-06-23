@@ -20,7 +20,7 @@ class TumorModel(Model):
         self.max_number_of_cells = 400
         self.patient_alive = True
         self.message = ""
-
+        self.running = True
         #params that are passed
         self.patient_sex = patient_sex
         self.bmi = bmi
