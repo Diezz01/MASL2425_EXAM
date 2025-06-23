@@ -26,8 +26,17 @@ pip install -r requirements.txt
 ```
 
 ## Run the Application
-To run the jupyter notebook, execute the following command:
-
+### 1. Using web interface
+Here using the GUI provided by mesa is possible to run a a simulation with custom parameters
+```bash
+python python .\mesa_run.py 
+```
+### 2. Machine learning results
+Generate a CSV file containing the simulation results using random parameters.
+```bash
+python python .\simulation_ml.py    
+```
+Run the jupyter notebook
 ```bash
 jupyter notebook ./machine_learning.ipynb
 ```
