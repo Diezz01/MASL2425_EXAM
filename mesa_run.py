@@ -20,7 +20,7 @@ if __name__ == "__main__":
         "result"  # result of simulation -> True = alive, False = dead
     ]
 
-    # Verifica se il file non esiste o è vuoto
+    # Verifying if file is empty
     write_header = not os.path.exists(filename) or os.stat(filename).st_size == 0
 
     with open(filename, mode="a", newline="") as file:

@@ -45,6 +45,7 @@ class TumorModel(Model):
             y = self.random.randrange(height)
             self.spawn_tumor((x, y))
 
+        # Obese patient modifiers
         modifiers = {
             "CD8": 1.0,
             "Treg": 0.9 if self.is_patient_obese() else 1.0,
@@ -66,7 +67,7 @@ class TumorModel(Model):
             "resistance_to_therapy": 1.05 if self.patient_sex == False else 1.0
         }
 
-        # Applica i modificatori ai valori provenienti dalla GUI
+        # Applying modifiers 
         immune_types = {
             "CD8": int(self.CD8 * modifiers["CD8"] * modifiersSex["CD8"]),
             "Treg": int(self.treg * modifiers["Treg"] * modifiersSex["Treg"]),
@@ -77,16 +78,16 @@ class TumorModel(Model):
         
         total_cells = sum(immune_types.values())
         
-        # 1. Crea tutte le possibili coordinate
+        # 1. Creating all possible positions
         all_positions = [(x, y) for x in range(width) for y in range(height)]
 
-        # 2. Mescola le posizioni
+        # 2. Shuffling positions
         self.random.shuffle(all_positions)
 
-        # 3. Prendi le prime 50 posizioni uniche
+        # 3. Obtaining first 30 unique positions
         unique_positions = all_positions[:total_cells]
 
-        # 4. Assegna agenti a posizioni uniche
+        # 4. Assign agents to unique positions
         pos_index = 0
 
         for cell_type, n_cell in immune_types.items():
@@ -97,8 +98,7 @@ class TumorModel(Model):
                 self.grid.place_agent(agent, pos)
                 self.schedule.add(agent)
 
-        
-        #this part is to permit the visualization in the chart at each step
+        # Visualization of the chart at each step
         self.datacollector = DataCollector(
             self.get_cells_count()
         )
@@ -129,7 +129,7 @@ class TumorModel(Model):
         return self.bmi >= 30
 
     def apply_therapy_effects(self):
-        print("Terapia somministrata: inizio effetto.")
+        print("Somministrated therapy: starting effect.")
 
         print("irl before", self.immune_response_level)
         print("tpr before", self.tumor_proliferation_rate)
@@ -155,19 +155,19 @@ class TumorModel(Model):
 
             #check if the tumor is completely eliminated
             if num == 0 and cell_type == "Tumor Cells":
-                self.message = "Simulazione terminata: paziente guarito dal tumore"
+                self.message = "Simulation terminated: patient healed."
                 return 1
 
             #check for each type of cells if its instances are too many
             if num > self.max_number_of_cells:
                 if cell_type == "Tumor Cells":
-                    self.message = "⚠️ Paziente deceduto: crescita tumorale incontrollata."
+                    self.message = "Paziente dead: uncontrolled tumor growth."
                     return 0
                 
-                self.message = "Simulazione terminata: paziente guarito dal tumore"
+                self.message = "Simulation terminated: patient healed."
                 return 1, 
             
-        self.message = f"✅ Stato: Vivo — Cellule tumorali: {self.get_cells_count()["Tumor Cells"](self)}"
+        self.message = f"✅ State: Alive — Number of tumor cells: {self.get_cells_count()["Tumor Cells"](self)}"
         return 2
 
     def printParameters(self):
